@@ -1,3 +1,3 @@
 git add .
-git commit -m "Fix: no fallar el build si faltan las claves VAPID"
+git commit -m "Fix: corregir contenido de webpush.ts"
 git push
