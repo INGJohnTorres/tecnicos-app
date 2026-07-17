@@ -2,38 +2,45 @@
   "name": "tecnicos-app",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "postinstall": "prisma generate",
-  "start": "next start",
-  "lint": "next lint",
-  "db:migrate": "prisma migrate dev",
-  "db:seed": "tsx prisma/seed.ts",
-  "db:studio": "prisma studio"
-},
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "postinstall": "prisma generate",
+    "start": "next start",
+    "lint": "next lint",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
   "dependencies": {
     "@prisma/client": "^5.20.0",
+    "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
     "jose": "^5.9.6",
-    "web-push": "^3.6.7",
-    "next": "14.2.5",
+    "jsonwebtoken": "^9.0.2",
+    "next": "^14.2.35",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.14.0",
-    "@types/web-push": "^3.6.3",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/web-push": "^3.6.3",
     "prisma": "^5.20.0",
     "tsx": "^4.16.0",
     "typescript": "^5.5.4"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "allowScripts": {
+    "@prisma/client@5.22.0": true,
+    "@prisma/engines@5.22.0": true,
+    "esbuild@0.28.1": true,
+    "prisma@5.22.0": true
   }
 }
