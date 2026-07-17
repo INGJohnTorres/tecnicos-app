@@ -1,0 +1,100 @@
+// Esquema de base de datos — MVP app de visitas y comisiones FTTH
+// Cubre: login (Fase 1), carga de visitas (Fase 2), cálculo del ciclo
+// (Fase 3), panel admin (Fase 4) y notificaciones push (Fase 5).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMIN
+  TECNICO
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nombre    String   @unique
+  rol       Rol      @default(TECNICO)
+  claveHash String
+  activo    Boolean  @default(true)
+  // Fuerza el cambio de clave en el primer login (las claves de arranque
+  // del seed no deberían quedar activas para siempre).
+  requiereCambioClave Boolean @default(true)
+  creadoEn  DateTime @default(now())
+
+  // Visitas que le pertenecen a este usuario (si es técnico)
+  visitas         Registro[] @relation("VisitasDelTecnico")
+  // Visitas que este usuario cargó (puede ser el propio técnico o el admin
+  // cargando a nombre de otro). Sirve para trazabilidad: "quién tipeó esto".
+  registrosCreados Registro[] @relation("CargadoPor")
+
+  suscripcionesPush PushSubscription[]
+
+  @@map("usuarios")
+}
+
+// Suscripción de notificaciones push (Web Push) del navegador del técnico.
+// Se guarda cuando el técnico instala la PWA y acepta el permiso.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  creadoEn  DateTime @default(now())
+
+  @@map("push_subscriptions")
+}
+
+// Un registro = lo que un técnico cargó para UN día puntual.
+// Una sola fila por técnico por día (no se permite duplicar el mismo día,
+// solo corregirlo mientras el ciclo siga abierto).
+model Registro {
+  id        String   @id @default(cuid())
+
+  usuario   Usuario  @relation("VisitasDelTecnico", fields: [usuarioId], references: [id])
+  usuarioId String
+
+  cargadoPor   Usuario @relation("CargadoPor", fields: [cargadoPorId], references: [id])
+  cargadoPorId String
+
+  // Fecha REAL en que se hicieron las visitas (no la fecha en que se carga).
+  fechaVisita DateTime @db.Date
+
+  cantidadSinCambio Int @default(0) // 76 puntos c/u
+  cantidadConCambio Int @default(0) // 66 puntos c/u
+
+  // Calculados al guardar, para no tener que recalcular en cada lectura.
+  puntosSinCambio Int
+  puntosConCambio Int
+  puntosTotal     Int
+
+  // A qué ciclo de facturación (19 → 18) pertenece esta fecha.
+  // Se guarda el primer día del ciclo (ej: 2026-06-19) para poder
+  // agrupar/filtrar por ciclo con una sola columna indexada.
+  cicloInicio DateTime @db.Date
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  // Un técnico no puede tener dos registros para el mismo día.
+  @@unique([usuarioId, fechaVisita])
+  @@index([cicloInicio])
+  @@map("registros")
+}
+
+// Tabla oficial de comisión FTTH (validada contra datos reales de nómina).
+// puntos = total acumulado en el ciclo → comision / produccion correspondiente.
+model TablaComisionFTTH {
+  puntos     Int   @id
+  comision   Float
+  produccion Float
+
+  @@map("tabla_comision_ftth")
+}
