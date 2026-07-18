@@ -59,7 +59,7 @@ async function crearUsuariosIniciales() {
     const claveHash = await bcrypt.hash(u.clave, 10);
     await prisma.usuario.upsert({
       where: { nombre: u.nombre },
-      update: {},
+      update: { claveHash, rol: u.rol, requiereCambioClave: true },
       create: {
         nombre: u.nombre,
         rol: u.rol,
@@ -67,7 +67,7 @@ async function crearUsuariosIniciales() {
       },
     });
   }
-  console.log("Usuarios iniciales creados (recordá cambiar las claves de arranque).");
+  console.log("Usuarios iniciales creados/actualizados (recordá cambiar las claves de arranque).");
 }
 
 async function main() {
