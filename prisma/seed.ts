@@ -48,10 +48,10 @@ async function cargarTablaComision() {
 // default (ver schema.prisma), así que la primera vez que cada uno entre
 // la app le va a pedir cambiarla antes de dejarlo seguir (Fase 1).
 const USUARIOS_INICIALES = [
-  { nombre: "admin", rol: "ADMIN" as const, clave: "123456789" },
-  { nombre: "Luis", rol: "TECNICO" as const, clave: "123456789" },
-  { nombre: "Mauricio", rol: "TECNICO" as const, clave: "123456789" },
-  { nombre: "John", rol: "TECNICO" as const, clave: "123456789" },
+  { nombre: "admin", rol: "ADMIN" as const, clave: "CAMBIAR_ESTA_CLAVE_ADMIN" },
+  { nombre: "Luis", rol: "TECNICO" as const, clave: "CAMBIAR_ESTA_CLAVE_ADMIN" },
+  { nombre: "Mauricio", rol: "TECNICO" as const, clave: "CAMBIAR_ESTA_CLAVE_ADMIN" },
+  { nombre: "John", rol: "TECNICO" as const, clave: "CAMBIAR_ESTA_CLAVE_ADMIN" },
 ];
 
 async function crearUsuariosIniciales() {
