@@ -50,6 +50,9 @@ export default async function AdminPage() {
       <a href="/admin/usuarios" style={styles.botonSecundario}>
         Gestionar usuarios (técnicos)
       </a>
+      <a href="/ranking" style={styles.botonSecundario}>
+        Ver ranking
+      </a>
 
       <div style={styles.lista}>
         {filas.map(({ tecnico, puntos, resultado }) => (
