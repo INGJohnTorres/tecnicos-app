@@ -74,6 +74,10 @@ export default async function MiCicloPage() {
         Cargar visitas de hoy
       </a>
 
+      <a href="/ranking" style={styles.botonRanking}>
+        🏆 Ver ranking del ciclo
+      </a>
+
       <section style={styles.historial}>
         <h2 style={styles.subtituloSeccion}>Historial del ciclo</h2>
         {registros.length === 0 && <p style={styles.vacio}>Todavía no cargaste visitas en este ciclo.</p>}
