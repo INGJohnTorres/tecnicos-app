@@ -51,6 +51,9 @@ export default async function AdminPage() {
       <a href="/dashboard" style={styles.botonSecundario}>
         Ver tendencias del equipo
       </a>
+      <a href="/ranking" style={styles.botonSecundario}>
+        Ver ranking
+      </a>
 
       <div style={styles.lista}>
         {filas.map(({ tecnico, puntos, resultado }) => (

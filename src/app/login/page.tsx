@@ -15,26 +15,37 @@ export default function LoginPage() {
     setError(null);
     setCargando(true);
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, clave }),
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, clave }),
+      });
 
-    const data = await res.json();
-    setCargando(false);
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        setError(`Error del servidor (código ${res.status}). Avisale al admin.`);
+        return;
+      }
 
-    if (!res.ok) {
-      setError(data.error ?? "No se pudo iniciar sesión");
-      return;
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo iniciar sesión");
+        return;
+      }
+
+      if (data.usuario.requiereCambioClave) {
+        router.push("/cambiar-clave");
+        return;
+      }
+
+      router.push(data.usuario.rol === "ADMIN" ? "/admin" : "/mi-ciclo");
+    } catch (err) {
+      setError("No se pudo conectar con el servidor. Revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setCargando(false);
     }
-
-    if (data.usuario.requiereCambioClave) {
-      router.push("/cambiar-clave");
-      return;
-    }
-
-    router.push(data.usuario.rol === "ADMIN" ? "/admin" : "/mi-ciclo");
   }
 
   return (

@@ -75,6 +75,9 @@ export default async function MiCicloPage() {
       <a href="/dashboard" style={styles.botonSecundario}>
         Ver mi tendencia
       </a>
+      <a href="/ranking" style={styles.botonRanking}>
+        🏆 Ver ranking del ciclo
+      </a>
 
       <section style={styles.historial}>
         <h2 style={styles.subtituloSeccion}>Historial del ciclo</h2>
@@ -126,9 +129,21 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 10,
     textDecoration: "none",
     fontSize: 16,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   botonSecundario: {
+    display: "block",
+    textAlign: "center",
+    background: "#fff",
+    color: "#111",
+    border: "1px solid #ddd",
+    padding: 12,
+    borderRadius: 10,
+    textDecoration: "none",
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  botonRanking: {
     display: "block",
     textAlign: "center",
     background: "#fff",
