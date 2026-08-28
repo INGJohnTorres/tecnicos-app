@@ -5,7 +5,7 @@ import Card from "@/app/_componentes/ui/Card";
 import Button from "@/app/_componentes/ui/Button";
 import Badge from "@/app/_componentes/ui/Badge";
 import { Field } from "@/app/_componentes/ui/Field";
-import { IconCheckCircle, IconAlertTriangle } from "@/app/_componentes/ui/Icons";
+import { IconCheckCircle, IconAlertTriangle, IconTrash } from "@/app/_componentes/ui/Icons";
 
 type Usuario = {
   id: string;
@@ -22,6 +22,7 @@ export default function UsuariosPanel() {
   const [nombreNuevo, setNombreNuevo] = useState("");
   const [claveNueva, setClaveNueva] = useState("");
   const [creando, setCreando] = useState(false);
+  const [eliminandoId, setEliminandoId] = useState<string | null>(null);
 
   const cargarUsuarios = useCallback(async () => {
     setCargando(true);
@@ -83,12 +84,32 @@ export default function UsuariosPanel() {
     cargarUsuarios();
   }
 
+  async function eliminarTecnico(u: Usuario) {
+    const confirmado = window.confirm(
+      `¿Eliminar a "${u.nombre}" para siempre? Esto solo funciona si todavía no tiene ninguna visita cargada — si ya cargó algo, usá "Desactivar" en su lugar. Esta acción no se puede deshacer.`
+    );
+    if (!confirmado) return;
+
+    setEliminandoId(u.id);
+    const res = await fetch(`/api/usuarios/${u.id}`, { method: "DELETE" });
+    const data = await res.json();
+    setEliminandoId(null);
+
+    if (!res.ok) {
+      setMensaje({ tipo: "error", texto: data.error ?? "No se pudo eliminar" });
+      return;
+    }
+
+    setMensaje({ tipo: "ok", texto: `"${u.nombre}" fue eliminado.` });
+    cargarUsuarios();
+  }
+
   return (
     <div style={{ maxWidth: 520, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
         Un técnico desactivado no puede entrar a la app y desaparece de las listas activas, pero su historial de
-        visitas y comisión queda guardado. No hay opción de "eliminar" de verdad, a propósito — borrar la cuenta
-        borraría también su historial de puntos.
+        visitas y comisión queda guardado. "Eliminar" solo funciona si todavía no cargó ninguna visita (por ejemplo,
+        si lo creaste por error) — si ya tiene historial, usá "Desactivar" para no perder sus puntos.
       </p>
 
       {mensaje && (
@@ -110,9 +131,20 @@ export default function UsuariosPanel() {
                 {!u.activo && <Badge variant="warning">Inactivo</Badge>}
               </div>
               {u.rol === "TECNICO" && (
-                <button onClick={() => cambiarEstado(u)} className={`btn btn-sm ${u.activo ? "btn-danger" : "btn-secondary"}`}>
-                  {u.activo ? "Desactivar" : "Reactivar"}
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => cambiarEstado(u)} className={`btn btn-sm ${u.activo ? "btn-danger" : "btn-secondary"}`}>
+                    {u.activo ? "Desactivar" : "Reactivar"}
+                  </button>
+                  <button
+                    onClick={() => eliminarTecnico(u)}
+                    disabled={eliminandoId === u.id}
+                    title="Eliminar para siempre (solo si no tiene visitas cargadas)"
+                    className="btn btn-secondary btn-sm"
+                    style={{ padding: "6px 10px", color: "var(--danger)" }}
+                  >
+                    <IconTrash size={13} />
+                  </button>
+                </div>
               )}
             </Card>
           ))}
