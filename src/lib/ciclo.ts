@@ -56,6 +56,13 @@ export function cicloActual(): { inicio: Date; fin: Date } {
   return { inicio, fin: finDeCiclo(inicio) };
 }
 
+/** El ciclo inmediatamente anterior al que arranca en `inicio` (un mes antes). */
+export function cicloAnterior(inicio: Date): { inicio: Date; fin: Date } {
+  const inicioAnterior = new Date(inicio);
+  inicioAnterior.setUTCMonth(inicioAnterior.getUTCMonth() - 1);
+  return { inicio: inicioAnterior, fin: finDeCiclo(inicioAnterior) };
+}
+
 /** "Hoy" en Bogotá, como fecha pura (sin hora) — para comparar con fechaVisita. */
 export function hoyBogota(): Date {
   const ahora = ahoraEnBogota();
@@ -71,4 +78,21 @@ export function hoyBogotaISO(): string {
   const mm = String(ahora.getUTCMonth() + 1).padStart(2, "0");
   const dd = String(ahora.getUTCDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Formatea una fecha "pura" (inicio/fin de ciclo, fechaVisita) como
+ * dd/mm/aaaa. Estas fechas se guardan como medianoche UTC representando
+ * el día de Bogotá (ver `ahoraEnBogota`), así que hay que forzar
+ * timeZone: "UTC" acá — si no, `toLocaleDateString` las convierte a la
+ * zona horaria local del proceso que ejecuta el código (el servidor) y,
+ * si esa zona está detrás de UTC, el resultado muestra el día anterior.
+ */
+export function formatoFecha(d: Date): string {
+  return d.toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }

@@ -124,3 +124,113 @@ export async function eliminarRegistro(id: string) {
 function soloFecha(fecha: Date): Date {
   return new Date(Date.UTC(fecha.getUTCFullYear(), fecha.getUTCMonth(), fecha.getUTCDate()));
 }
+
+export type PuntoSerieDia = {
+  diaCiclo: number; // 1-based, contado desde el primer día del ciclo
+  fecha: Date;
+  visitas: number;
+  puntos: number;
+  visitasAcumuladas: number;
+  puntosAcumulados: number;
+};
+
+type RegistroParcial = {
+  fechaVisita: Date;
+  cantidadSinCambio: number;
+  cantidadConCambio: number;
+  puntosTotal: number;
+};
+
+/**
+ * Arma la serie día a día de `inicio` a `fin` (inclusive), completando con
+ * ceros los días sin registro y acumulando cuando hay más de una fila para
+ * la misma fecha (caso del agregado de equipo, donde varios técnicos
+ * pueden tener registro el mismo día).
+ */
+function construirSerieDiaria(registros: RegistroParcial[], inicio: Date, fin: Date): PuntoSerieDia[] {
+  const porFecha = new Map<string, { visitas: number; puntos: number }>();
+  for (const r of registros) {
+    const key = r.fechaVisita.toISOString().slice(0, 10);
+    const previo = porFecha.get(key) ?? { visitas: 0, puntos: 0 };
+    porFecha.set(key, {
+      visitas: previo.visitas + r.cantidadSinCambio + r.cantidadConCambio,
+      puntos: previo.puntos + r.puntosTotal,
+    });
+  }
+
+  const dias: PuntoSerieDia[] = [];
+  let visitasAcumuladas = 0;
+  let puntosAcumulados = 0;
+  const cursor = new Date(inicio);
+  let diaCiclo = 1;
+
+  while (cursor.getTime() <= fin.getTime()) {
+    const key = cursor.toISOString().slice(0, 10);
+    const datoDia = porFecha.get(key) ?? { visitas: 0, puntos: 0 };
+    visitasAcumuladas += datoDia.visitas;
+    puntosAcumulados += datoDia.puntos;
+    dias.push({
+      diaCiclo,
+      fecha: new Date(cursor),
+      visitas: datoDia.visitas,
+      puntos: datoDia.puntos,
+      visitasAcumuladas,
+      puntosAcumulados,
+    });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+    diaCiclo++;
+  }
+
+  return dias;
+}
+
+/** Serie diaria (acumulada) de UN técnico dentro de un ciclo, de `inicio` a `fin`. */
+export async function serieDiariaCiclo(usuarioId: string, inicio: Date, fin: Date): Promise<PuntoSerieDia[]> {
+  const registros = await prisma.registro.findMany({
+    where: { usuarioId, cicloInicio: inicio },
+    select: { fechaVisita: true, cantidadSinCambio: true, cantidadConCambio: true, puntosTotal: true },
+  });
+  return construirSerieDiaria(registros, inicio, fin);
+}
+
+/** Serie diaria (acumulada) de TODOS los técnicos combinados, dentro de un ciclo. */
+export async function serieDiariaCicloEquipo(inicio: Date, fin: Date): Promise<PuntoSerieDia[]> {
+  const registros = await prisma.registro.findMany({
+    where: { cicloInicio: inicio },
+    select: { fechaVisita: true, cantidadSinCambio: true, cantidadConCambio: true, puntosTotal: true },
+  });
+  return construirSerieDiaria(registros, inicio, fin);
+}
+
+export type PuntoComparativo = { diaCiclo: number; actual: number | null; anterior: number | null };
+
+/**
+ * Combina la serie del ciclo actual con la del ciclo anterior en un solo
+ * arreglo indexado por "día del ciclo", para poder graficar las dos líneas
+ * una contra la otra. El ciclo actual normalmente viene más corto (llega
+ * solo hasta hoy), así que a partir de ahí queda en `null` — recharts corta
+ * la línea ahí en vez de inventar una caída a cero.
+ */
+export function combinarSeriesComparativas(
+  actual: PuntoSerieDia[],
+  anterior: PuntoSerieDia[],
+  metrica: "visitas" | "puntos"
+): PuntoComparativo[] {
+  const campo = metrica === "visitas" ? "visitasAcumuladas" : "puntosAcumulados";
+  const porDiaActual = new Map(actual.map((d) => [d.diaCiclo, d[campo]]));
+  const porDiaAnterior = new Map(anterior.map((d) => [d.diaCiclo, d[campo]]));
+  const maxDias = Math.max(
+    actual.length ? actual[actual.length - 1].diaCiclo : 0,
+    anterior.length ? anterior[anterior.length - 1].diaCiclo : 0
+  );
+
+  const resultado: PuntoComparativo[] = [];
+  for (let dia = 1; dia <= maxDias; dia++) {
+    resultado.push({
+      diaCiclo: dia,
+      actual: porDiaActual.get(dia) ?? null,
+      anterior: porDiaAnterior.get(dia) ?? null,
+    });
+  }
+  return resultado;
+}

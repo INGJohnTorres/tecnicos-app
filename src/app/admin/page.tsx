@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { usuarioActual } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { cicloActual } from "@/lib/ciclo";
+import { cicloActual, formatoFecha } from "@/lib/ciclo";
 import { totalPuntosCiclo } from "@/lib/registros";
 import { calcularProductividadEstimada } from "@/lib/comision";
 import CerrarSesionBoton from "@/app/_componentes/CerrarSesionBoton";
@@ -27,8 +27,6 @@ export default async function AdminPage() {
     })
   );
 
-  const formatoFecha = (d: Date) =>
-    d.toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" });
   const formatoPlata = (n: number) =>
     n.toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
@@ -49,6 +47,9 @@ export default async function AdminPage() {
       </a>
       <a href="/admin/usuarios" style={styles.botonSecundario}>
         Gestionar usuarios (técnicos)
+      </a>
+      <a href="/dashboard" style={styles.botonSecundario}>
+        Ver tendencias del equipo
       </a>
 
       <div style={styles.lista}>

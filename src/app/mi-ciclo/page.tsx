@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { usuarioActual } from "@/lib/auth";
-import { cicloActual } from "@/lib/ciclo";
+import { cicloActual, formatoFecha } from "@/lib/ciclo";
 import { totalPuntosCiclo, registrosDelCiclo } from "@/lib/registros";
 import { calcularProductividadEstimada, puntosParaSiguienteTramo } from "@/lib/comision";
 import CerrarSesionBoton from "@/app/_componentes/CerrarSesionBoton";
@@ -18,8 +18,6 @@ export default async function MiCicloPage() {
   const siguienteTramo = await puntosParaSiguienteTramo(puntos);
   const registros = await registrosDelCiclo(usuario.id, inicio);
 
-  const formatoFecha = (d: Date) =>
-    d.toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" });
   const formatoPlata = (n: number) =>
     n.toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
@@ -74,6 +72,10 @@ export default async function MiCicloPage() {
         Cargar visitas de hoy
       </a>
 
+      <a href="/dashboard" style={styles.botonSecundario}>
+        Ver mi tendencia
+      </a>
+
       <section style={styles.historial}>
         <h2 style={styles.subtituloSeccion}>Historial del ciclo</h2>
         {registros.length === 0 && <p style={styles.vacio}>Todavía no cargaste visitas en este ciclo.</p>}
@@ -124,6 +126,18 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 10,
     textDecoration: "none",
     fontSize: 16,
+    marginBottom: 12,
+  },
+  botonSecundario: {
+    display: "block",
+    textAlign: "center",
+    background: "#fff",
+    color: "#111",
+    border: "1px solid #ddd",
+    padding: 12,
+    borderRadius: 10,
+    textDecoration: "none",
+    fontSize: 14,
     marginBottom: 24,
   },
   historial: { background: "#fff", borderRadius: 16, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.08)" },
