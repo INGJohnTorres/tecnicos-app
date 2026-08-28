@@ -40,7 +40,7 @@ export default async function RankingPage() {
   conPuntos.sort((a, b) => b.puntos - a.puntos);
 
   const formatoFecha = (d: Date) =>
-    d.toLocaleDateString("es-CO", { day: "2-digit", month: "short" });
+    d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", timeZone: "UTC" });
 
   return (
     <main style={styles.main}>
