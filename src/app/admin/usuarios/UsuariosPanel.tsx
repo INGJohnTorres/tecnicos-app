@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Card from "@/app/_componentes/ui/Card";
+import Button from "@/app/_componentes/ui/Button";
+import Badge from "@/app/_componentes/ui/Badge";
+import { Field } from "@/app/_componentes/ui/Field";
+import { IconCheckCircle, IconAlertTriangle } from "@/app/_componentes/ui/Icons";
 
 type Usuario = {
   id: string;
@@ -79,110 +84,64 @@ export default function UsuariosPanel() {
   }
 
   return (
-    <main style={styles.main}>
-      <div style={styles.columna}>
-        <a href="/admin" style={styles.link}>← Volver al panel</a>
-        <h1 style={styles.titulo}>Usuarios</h1>
-        <p style={styles.nota}>
-          Un técnico desactivado no puede entrar a la app y desaparece de las
-          listas activas, pero su historial de visitas y comisión queda
-          guardado. No hay opción de "eliminar" de verdad, a propósito —
-          borrar la cuenta borraría también su historial de puntos.
-        </p>
+    <div style={{ maxWidth: 520, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+      <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
+        Un técnico desactivado no puede entrar a la app y desaparece de las listas activas, pero su historial de
+        visitas y comisión queda guardado. No hay opción de "eliminar" de verdad, a propósito — borrar la cuenta
+        borraría también su historial de puntos.
+      </p>
 
-        {mensaje && <p style={mensaje.tipo === "ok" ? styles.ok : styles.error}>{mensaje.texto}</p>}
+      {mensaje && (
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: mensaje.tipo === "ok" ? "var(--success)" : "var(--danger)" }}>
+          {mensaje.tipo === "ok" ? <IconCheckCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} /> : <IconAlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />}
+          {mensaje.texto}
+        </div>
+      )}
 
-        {cargando && <p style={styles.nota}>Cargando...</p>}
+      {cargando && <p style={{ color: "var(--text-faint)", fontSize: 14 }}>Cargando...</p>}
 
-        {!cargando && (
-          <div style={styles.lista}>
-            {usuarios.map((u) => (
-              <div key={u.id} style={styles.tarjeta}>
-                <div>
-                  <strong>{u.nombre}</strong>
-                  <span style={styles.rol}> · {u.rol === "ADMIN" ? "Administrador" : "Técnico"}</span>
-                  {!u.activo && <span style={styles.badgeInactivo}>Inactivo</span>}
-                </div>
-                {u.rol === "TECNICO" && (
-                  <button
-                    style={u.activo ? styles.botonRojo : styles.botonVerde}
-                    onClick={() => cambiarEstado(u)}
-                  >
-                    {u.activo ? "Desactivar" : "Reactivar"}
-                  </button>
-                )}
+      {!cargando && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {usuarios.map((u) => (
+            <Card key={u.id} style={{ padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <strong style={{ fontSize: 14 }}>{u.nombre}</strong>
+                <span style={{ color: "var(--text-faint)", fontSize: 12.5 }}>{u.rol === "ADMIN" ? "Administrador" : "Técnico"}</span>
+                {!u.activo && <Badge variant="warning">Inactivo</Badge>}
               </div>
-            ))}
-          </div>
-        )}
+              {u.rol === "TECNICO" && (
+                <button onClick={() => cambiarEstado(u)} className={`btn btn-sm ${u.activo ? "btn-danger" : "btn-secondary"}`}>
+                  {u.activo ? "Desactivar" : "Reactivar"}
+                </button>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
 
-        <form onSubmit={crearTecnico} style={styles.form}>
-          <h2 style={styles.subtitulo}>Crear técnico nuevo</h2>
-          <label style={styles.label}>
-            Usuario (login — minúsculas, sin espacios ni tildes)
-            <input
-              style={styles.input}
-              value={nombreNuevo}
-              onChange={(e) => setNombreNuevo(e.target.value)}
-              placeholder="ej: mgomez"
-              required
-            />
-          </label>
-          <label style={styles.label}>
-            Clave inicial (el técnico la va a tener que cambiar al entrar)
-            <input
-              style={styles.input}
-              type="text"
-              value={claveNueva}
-              onChange={(e) => setClaveNueva(e.target.value)}
-              placeholder="mínimo 6 caracteres"
-              required
-            />
-          </label>
-          <button style={styles.boton} disabled={creando}>
-            {creando ? "Creando..." : "Crear técnico"}
-          </button>
+      <Card glow>
+        <h2 style={{ fontFamily: "var(--font-display)", margin: "0 0 16px", fontSize: 15, fontWeight: 700 }}>Crear técnico nuevo</h2>
+        <form onSubmit={crearTecnico} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <Field
+            label="Usuario (login — minúsculas, sin espacios ni tildes)"
+            value={nombreNuevo}
+            onChange={(e) => setNombreNuevo(e.target.value)}
+            placeholder="ej: mgomez"
+            required
+          />
+          <Field
+            label="Clave inicial (el técnico la va a tener que cambiar al entrar)"
+            type="text"
+            value={claveNueva}
+            onChange={(e) => setClaveNueva(e.target.value)}
+            placeholder="mínimo 6 caracteres"
+            required
+          />
+          <Button type="submit" loading={creando} style={{ width: "100%" }}>
+            Crear técnico
+          </Button>
         </form>
-      </div>
-    </main>
+      </Card>
+    </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: {
-    minHeight: "100vh",
-    fontFamily: "sans-serif",
-    background: "#f5f5f5",
-    padding: 16,
-    display: "flex",
-    justifyContent: "center",
-  },
-  columna: { width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", gap: 12 },
-  titulo: { margin: "8px 0 0", fontSize: 22 },
-  subtitulo: { margin: "0 0 4px", fontSize: 16 },
-  nota: { fontSize: 13, color: "#777", margin: 0 },
-  lista: { display: "flex", flexDirection: "column", gap: 10, marginTop: 8 },
-  tarjeta: {
-    background: "#fff", borderRadius: 10, padding: "12px 16px",
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.06)", fontSize: 14,
-  },
-  rol: { color: "#888", fontSize: 13 },
-  badgeInactivo: {
-    marginLeft: 8, fontSize: 11, color: "#92400e", background: "#fffbeb",
-    border: "1px solid #fde68a", borderRadius: 6, padding: "2px 6px",
-  },
-  botonRojo: { padding: "6px 12px", borderRadius: 8, border: "1px solid #f3b3b3", background: "#fff5f5", color: "#c0392b", fontSize: 13, cursor: "pointer" },
-  botonVerde: { padding: "6px 12px", borderRadius: 8, border: "1px solid #b7e4c7", background: "#f0fdf4", color: "#15803d", fontSize: 13, cursor: "pointer" },
-  form: {
-    background: "#fff", borderRadius: 12, padding: 20, marginTop: 16,
-    display: "flex", flexDirection: "column", gap: 12,
-    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-  },
-  label: { display: "flex", flexDirection: "column", gap: 6, fontSize: 13 },
-  input: { padding: "10px 12px", borderRadius: 8, border: "1px solid #ccc", fontSize: 15 },
-  boton: { padding: 12, borderRadius: 8, border: "none", background: "#111", color: "#fff", fontSize: 15, cursor: "pointer" },
-  link: { fontSize: 13, color: "#2563eb", textDecoration: "none" },
-  ok: { color: "#15803d", fontSize: 13, margin: 0 },
-  error: { color: "#c0392b", fontSize: 13, margin: 0 },
-};

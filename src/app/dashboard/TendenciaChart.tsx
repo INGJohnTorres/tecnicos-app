@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import type { PuntoComparativo } from "@/lib/registros";
+import Card from "@/app/_componentes/ui/Card";
 
 type Totales = {
   actual: number;
@@ -29,6 +30,12 @@ type Props = {
 
 type Metrica = "visitas" | "puntos";
 
+const COLOR_GRID = "rgba(255,255,255,0.08)";
+const COLOR_AXIS = "#5C6382";
+const COLOR_ANTERIOR = "#5C6382";
+const COLOR_ACTUAL_START = "#4F7CFF";
+const COLOR_ACTUAL_END = "#B85CFF";
+
 export default function TendenciaChart({
   serieVisitas,
   seriePuntos,
@@ -44,37 +51,43 @@ export default function TendenciaChart({
   const variacion = calcularVariacion(totales.actual, totales.anterior);
 
   return (
-    <div style={styles.tarjeta}>
-      <div style={styles.filaTop}>
-        <div style={styles.toggle}>
+    <Card glow style={{ padding: 24 }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <div style={{ display: "flex", background: "rgba(255,255,255,.05)", borderRadius: 10, padding: 3, border: "1px solid var(--border)" }}>
           <button
             onClick={() => setMetrica("visitas")}
-            style={metrica === "visitas" ? styles.toggleBotonActivo : styles.toggleBoton}
+            className={metrica === "visitas" ? "btn btn-primary btn-sm" : "btn btn-ghost btn-sm"}
+            style={{ boxShadow: "none" }}
           >
             Visitas
           </button>
           <button
             onClick={() => setMetrica("puntos")}
-            style={metrica === "puntos" ? styles.toggleBotonActivo : styles.toggleBoton}
+            className={metrica === "puntos" ? "btn btn-primary btn-sm" : "btn btn-ghost btn-sm"}
+            style={{ boxShadow: "none" }}
           >
             Puntos
           </button>
         </div>
       </div>
 
-      <div style={styles.resumen}>
+      <div style={{ display: "flex", gap: 28, marginBottom: 16, flexWrap: "wrap" }}>
         <div>
-          <p style={styles.etiquetaResumen}>{etiquetaActual}</p>
-          <p style={styles.numeroResumen}>{totales.actual.toLocaleString("es-CO")}</p>
+          <p style={{ margin: "0 0 2px", fontSize: 12, color: "var(--text-faint)" }}>{etiquetaActual}</p>
+          <p className="num" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700 }}>
+            {totales.actual.toLocaleString("es-CO")}
+          </p>
         </div>
         <div>
-          <p style={styles.etiquetaResumen}>{etiquetaAnterior}</p>
-          <p style={styles.numeroResumenSecundario}>{totales.anterior.toLocaleString("es-CO")}</p>
+          <p style={{ margin: "0 0 2px", fontSize: 12, color: "var(--text-faint)" }}>{etiquetaAnterior}</p>
+          <p className="num" style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--text-muted)" }}>
+            {totales.anterior.toLocaleString("es-CO")}
+          </p>
         </div>
         {variacion !== null && (
           <div>
-            <p style={styles.etiquetaResumen}>Variación</p>
-            <p style={{ ...styles.numeroResumenSecundario, color: variacion >= 0 ? "#15803d" : "#b91c1c" }}>
+            <p style={{ margin: "0 0 2px", fontSize: 12, color: "var(--text-faint)" }}>Variación</p>
+            <p className="num" style={{ margin: 0, fontSize: 18, fontWeight: 700, color: variacion >= 0 ? "var(--success)" : "var(--danger)" }}>
               {variacion >= 0 ? "+" : ""}
               {variacion.toFixed(0)}%
             </p>
@@ -82,26 +95,41 @@ export default function TendenciaChart({
         )}
       </div>
 
-      <div style={{ width: "100%", height: 260 }}>
+      <div style={{ width: "100%", height: 280 }}>
         <ResponsiveContainer>
           <LineChart data={datos} margin={{ top: 8, right: 12, left: -12, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+            <defs>
+              <linearGradient id="lineaActual" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={COLOR_ACTUAL_START} />
+                <stop offset="100%" stopColor={COLOR_ACTUAL_END} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke={COLOR_GRID} />
             <XAxis
               dataKey="diaCiclo"
-              tick={{ fontSize: 12 }}
-              label={{ value: "Día del ciclo", position: "insideBottom", offset: -2, fontSize: 12 }}
+              tick={{ fontSize: 12, fill: COLOR_AXIS }}
+              stroke={COLOR_GRID}
+              label={{ value: "Día del ciclo", position: "insideBottom", offset: -2, fontSize: 12, fill: COLOR_AXIS }}
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12, fill: COLOR_AXIS }} stroke={COLOR_GRID} />
             <Tooltip
               formatter={(value) => (typeof value === "number" ? value.toLocaleString("es-CO") : value)}
               labelFormatter={(dia) => `Día ${dia} del ciclo`}
+              contentStyle={{
+                background: "#10162A",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: 10,
+                fontSize: 12.5,
+                color: "#E9ECF6",
+              }}
+              labelStyle={{ color: "#8B93AE" }}
             />
-            <Legend />
+            <Legend wrapperStyle={{ fontSize: 12.5, color: "#8B93AE" }} />
             <Line
               type="monotone"
               dataKey="anterior"
               name={etiquetaAnterior}
-              stroke="#9ca3af"
+              stroke={COLOR_ANTERIOR}
               strokeWidth={2}
               strokeDasharray="5 4"
               dot={false}
@@ -110,14 +138,14 @@ export default function TendenciaChart({
               type="monotone"
               dataKey="actual"
               name={etiquetaActual}
-              stroke="#111827"
-              strokeWidth={2.5}
+              stroke="url(#lineaActual)"
+              strokeWidth={2.75}
               dot={false}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -125,37 +153,3 @@ function calcularVariacion(actual: number, anterior: number): number | null {
   if (anterior === 0) return null;
   return ((actual - anterior) / anterior) * 100;
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  tarjeta: {
-    background: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-  },
-  filaTop: { display: "flex", justifyContent: "flex-end", marginBottom: 12 },
-  toggle: { display: "flex", background: "#f1f1f1", borderRadius: 10, padding: 3 },
-  toggleBoton: {
-    border: "none",
-    background: "transparent",
-    padding: "6px 14px",
-    borderRadius: 8,
-    fontSize: 13,
-    cursor: "pointer",
-    color: "#555",
-  },
-  toggleBotonActivo: {
-    border: "none",
-    background: "#111",
-    color: "#fff",
-    padding: "6px 14px",
-    borderRadius: 8,
-    fontSize: 13,
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  resumen: { display: "flex", gap: 24, marginBottom: 8, flexWrap: "wrap" },
-  etiquetaResumen: { margin: "0 0 2px", fontSize: 12, color: "#777" },
-  numeroResumen: { margin: 0, fontSize: 22, fontWeight: 700 },
-  numeroResumenSecundario: { margin: 0, fontSize: 16, fontWeight: 600, color: "#555" },
-};

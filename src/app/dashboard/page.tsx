@@ -8,7 +8,7 @@ import {
   serieDiariaCicloEquipo,
   type PuntoSerieDia,
 } from "@/lib/registros";
-import CerrarSesionBoton from "@/app/_componentes/CerrarSesionBoton";
+import AppShell, { type SeccionActiva } from "@/app/_componentes/AppShell";
 import TendenciaChart from "./TendenciaChart";
 
 export const dynamic = "force-dynamic";
@@ -27,8 +27,6 @@ export default async function DashboardPage({
 
   const actual = cicloActual();
   const anterior = cicloAnterior(actual.inicio);
-  // El ciclo actual todavía está en curso: no tiene sentido graficar días
-  // futuros, así que la serie corta hasta hoy.
   const finActualEfectivo = actual.fin < hoyBogota() ? actual.fin : hoyBogota();
 
   const etiquetaActual = `Ciclo actual (${formatoFecha(actual.inicio)} - ${formatoFecha(actual.fin)})`;
@@ -84,80 +82,37 @@ export default async function DashboardPage({
     anterior: totalDeSerie(serieAnterior, "puntosAcumulados"),
   };
 
+  const activo: SeccionActiva = "tendencias";
+
   return (
-    <main style={styles.main}>
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.titulo}>{titulo}</h1>
-          <p style={styles.subtitulo}>Progreso acumulado, día a día del ciclo</p>
-        </div>
-        <CerrarSesionBoton />
-      </div>
-
-      <a href={usuario.rol === "ADMIN" ? "/admin" : "/mi-ciclo"} style={styles.volver}>
-        ← Volver
-      </a>
-
-      {usuario.rol === "ADMIN" && (
-        <div style={styles.selector}>
-          <a href="/dashboard" style={!tecnicoSeleccionado ? styles.chipActivo : styles.chip}>
-            Equipo
-          </a>
-          {listaTecnicos.map((t) => (
-            <a
-              key={t.id}
-              href={`/dashboard?tecnico=${t.id}`}
-              style={tecnicoSeleccionado?.id === t.id ? styles.chipActivo : styles.chip}
-            >
-              {t.nombre}
+    <AppShell usuario={usuario} activo={activo} titulo={titulo} subtitulo="Progreso acumulado, día a día del ciclo">
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        {usuario.rol === "ADMIN" && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+            <a href="/dashboard" className={`btn btn-sm ${!tecnicoSeleccionado ? "btn-primary" : "btn-secondary"}`}>
+              Equipo
             </a>
-          ))}
-        </div>
-      )}
+            {listaTecnicos.map((t) => (
+              <a
+                key={t.id}
+                href={`/dashboard?tecnico=${t.id}`}
+                className={`btn btn-sm ${tecnicoSeleccionado?.id === t.id ? "btn-primary" : "btn-secondary"}`}
+              >
+                {t.nombre}
+              </a>
+            ))}
+          </div>
+        )}
 
-      <TendenciaChart
-        serieVisitas={serieVisitas}
-        seriePuntos={seriePuntos}
-        totalesVisitas={totalesVisitas}
-        totalesPuntos={totalesPuntos}
-        etiquetaActual={etiquetaActual}
-        etiquetaAnterior={etiquetaAnterior}
-      />
-    </main>
+        <TendenciaChart
+          serieVisitas={serieVisitas}
+          seriePuntos={seriePuntos}
+          totalesVisitas={totalesVisitas}
+          totalesPuntos={totalesPuntos}
+          etiquetaActual={etiquetaActual}
+          etiquetaAnterior={etiquetaAnterior}
+        />
+      </div>
+    </AppShell>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: {
-    minHeight: "100vh",
-    fontFamily: "sans-serif",
-    background: "#f5f5f5",
-    padding: 24,
-    maxWidth: 720,
-    margin: "0 auto",
-  },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 },
-  titulo: { margin: 0, fontSize: 22 },
-  subtitulo: { margin: "4px 0 0", color: "#666", fontSize: 13 },
-  volver: { display: "inline-block", color: "#555", fontSize: 13, textDecoration: "none", marginBottom: 16 },
-  selector: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 },
-  chip: {
-    background: "#fff",
-    border: "1px solid #ddd",
-    color: "#333",
-    padding: "6px 12px",
-    borderRadius: 999,
-    fontSize: 13,
-    textDecoration: "none",
-  },
-  chipActivo: {
-    background: "#111",
-    border: "1px solid #111",
-    color: "#fff",
-    padding: "6px 12px",
-    borderRadius: 999,
-    fontSize: 13,
-    textDecoration: "none",
-    fontWeight: 600,
-  },
-};

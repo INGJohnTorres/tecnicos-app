@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconBell, IconCheckCircle } from "./ui/Icons";
 
 export default function ActivarNotificaciones() {
   const [estado, setEstado] = useState<"inicial" | "activando" | "activo" | "error" | "no_soportado">("inicial");
@@ -10,7 +11,6 @@ export default function ActivarNotificaciones() {
       setEstado("no_soportado");
       return;
     }
-    // Si ya hay una suscripción activa, lo mostramos directamente.
     navigator.serviceWorker.getRegistration().then(async (reg) => {
       const sub = await reg?.pushManager.getSubscription();
       if (sub) setEstado("activo");
@@ -45,34 +45,28 @@ export default function ActivarNotificaciones() {
     }
   }
 
-  if (estado === "no_soportado") return null; // no molestamos si el navegador no soporta push
+  if (estado === "no_soportado") return null;
+
   if (estado === "activo") {
-    return <p style={{ fontSize: 12, color: "#15803d" }}>🔔 Recordatorios activados</p>;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--success)" }}>
+        <IconCheckCircle size={14} />
+        Recordatorios activados
+      </div>
+    );
   }
 
   return (
-    <button onClick={activar} disabled={estado === "activando"} style={styles.boton}>
-      {estado === "activando" ? "Activando..." : "🔔 Activar recordatorio diario"}
+    <button onClick={activar} disabled={estado === "activando"} className="btn btn-secondary btn-sm">
+      <IconBell size={14} />
+      {estado === "activando" ? "Activando..." : "Activar recordatorio diario"}
     </button>
   );
 }
 
-// Las claves VAPID vienen en base64url — el navegador necesita un Uint8Array.
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const rawData = atob(base64);
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  boton: {
-    background: "#eff6ff",
-    border: "1px solid #bfdbfe",
-    borderRadius: 8,
-    padding: "8px 12px",
-    fontSize: 13,
-    cursor: "pointer",
-    color: "#1d4ed8",
-  },
-};

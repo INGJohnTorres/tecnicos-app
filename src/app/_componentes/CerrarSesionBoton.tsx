@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { IconLogOut } from "./ui/Icons";
 
-export default function CerrarSesionBoton() {
+export default function CerrarSesionBoton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
 
   async function cerrarSesion() {
@@ -10,19 +11,29 @@ export default function CerrarSesionBoton() {
     router.push("/login");
   }
 
+  if (compact) {
+    return (
+      <button
+        onClick={cerrarSesion}
+        title="Cerrar sesión"
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "var(--text-faint)",
+          cursor: "pointer",
+          padding: 6,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <IconLogOut size={15} />
+      </button>
+    );
+  }
+
   return (
-    <button
-      onClick={cerrarSesion}
-      style={{
-        background: "none",
-        border: "1px solid #ccc",
-        borderRadius: 8,
-        padding: "6px 12px",
-        fontSize: 13,
-        cursor: "pointer",
-        color: "#555",
-      }}
-    >
+    <button onClick={cerrarSesion} className="btn btn-secondary btn-sm">
+      <IconLogOut size={14} />
       Salir
     </button>
   );

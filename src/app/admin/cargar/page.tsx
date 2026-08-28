@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { usuarioActual } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import AppShell from "@/app/_componentes/AppShell";
 import CargarVisitaForm from "./CargarVisitaForm";
 
 export const dynamic = "force-dynamic";
@@ -16,5 +17,9 @@ export default async function CargarVisitaAdminPage() {
     select: { id: true, nombre: true },
   });
 
-  return <CargarVisitaForm tecnicos={tecnicos} />;
+  return (
+    <AppShell usuario={usuario} activo="cargar" titulo="Cargar / corregir visita">
+      <CargarVisitaForm tecnicos={tecnicos} />
+    </AppShell>
+  );
 }

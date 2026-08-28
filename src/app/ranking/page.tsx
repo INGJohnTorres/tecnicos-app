@@ -2,14 +2,15 @@ import { redirect } from "next/navigation";
 import { usuarioActual } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cicloActual } from "@/lib/ciclo";
+import AppShell from "@/app/_componentes/AppShell";
+import { IconTrophy } from "@/app/_componentes/ui/Icons";
 
 export const dynamic = "force-dynamic";
 
-const MEDALLAS = ["🥇", "🥈", "🥉"];
-const COLORES = [
-  { fondo: "linear-gradient(135deg, #f4d35e, #e8b923)", texto: "#3d2e00" },
-  { fondo: "linear-gradient(135deg, #cfd8dc, #90a4ae)", texto: "#1c2226" },
-  { fondo: "linear-gradient(135deg, #d98a4b, #b5652a)", texto: "#2e1a0a" },
+const RANK_STYLES = [
+  { background: "var(--grad)", color: "white", border: "none" },
+  { background: "rgba(255,255,255,.08)", color: "#E9ECF6", border: "1px solid var(--border-strong)" },
+  { background: "rgba(255,255,255,.05)", color: "#8B93AE", border: "1px solid var(--border)" },
 ];
 
 export default async function RankingPage() {
@@ -29,10 +30,7 @@ export default async function RankingPage() {
         where: { usuarioId: t.id, cicloInicio: inicio },
       });
       const puntos = registros.reduce((acc, r) => acc + r.puntosTotal, 0);
-      const visitas = registros.reduce(
-        (acc, r) => acc + r.cantidadSinCambio + r.cantidadConCambio,
-        0
-      );
+      const visitas = registros.reduce((acc, r) => acc + r.cantidadSinCambio + r.cantidadConCambio, 0);
       return { id: t.id, nombre: t.nombre, puntos, visitas };
     })
   );
@@ -43,75 +41,67 @@ export default async function RankingPage() {
     d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", timeZone: "UTC" });
 
   return (
-    <main style={styles.main}>
-      <div style={styles.columna}>
-        <a href={usuario.rol === "ADMIN" ? "/admin" : "/mi-ciclo"} style={styles.link}>
-          ← Volver
-        </a>
-        <h1 style={styles.titulo}>🏆 Ranking del ciclo actual</h1>
-        <p style={styles.nota}>
-          Del {formatoFecha(inicio)} al {formatoFecha(fin)} — según puntos
-          cargados hasta ahora. Se actualiza solo con cada visita nueva.
-        </p>
-
+    <AppShell
+      usuario={usuario}
+      activo="ranking"
+      titulo="Ranking del ciclo"
+      subtitulo={`Del ${formatoFecha(inicio)} al ${formatoFecha(fin)} — según puntos cargados hasta ahora`}
+    >
+      <div style={{ maxWidth: 520, margin: "0 auto" }}>
         {conPuntos.length === 0 && (
-          <p style={styles.nota}>Todavía nadie cargó visitas en este ciclo.</p>
+          <div className="card" style={{ textAlign: "center", color: "var(--text-faint)", fontSize: 14, padding: 24 }}>
+            Todavía nadie cargó visitas en este ciclo.
+          </div>
         )}
 
-        <div style={styles.podio}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {conPuntos.map((t, i) => {
-            const color = COLORES[i] ?? { fondo: "#f0f0f0", texto: "#333" };
             const esVos = t.id === usuario.id;
+            const estilo = RANK_STYLES[i] ?? { background: "rgba(255,255,255,.03)", color: "var(--text-faint)", border: "1px solid var(--border)" };
             return (
               <div
                 key={t.id}
+                className={i === 0 ? "card card-glow" : "card"}
                 style={{
-                  ...styles.tarjeta,
-                  background: color.fondo,
-                  color: color.texto,
-                  border: esVos ? "3px solid #111" : "none",
+                  padding: "18px 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                  border: esVos ? "1.5px solid var(--cyan)" : undefined,
                 }}
               >
-                <span style={styles.medalla}>{MEDALLAS[i] ?? "🎯"}</span>
-                <strong style={styles.nombre}>
-                  {t.nombre} {esVos && "(vos)"}
-                </strong>
-                <span style={styles.puntos}>{t.puntos} pts</span>
-                <span style={styles.visitas}>{t.visitas} visitas cargadas</span>
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                    fontSize: 16,
+                    flexShrink: 0,
+                    ...estilo,
+                  }}
+                >
+                  {i < 3 ? <IconTrophy size={18} /> : i + 1}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>
+                    {t.nombre} {esVos && <span style={{ color: "var(--cyan)", fontWeight: 600 }}>(vos)</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 2 }}>{t.visitas} visitas cargadas</div>
+                </div>
+                <div className="num" style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, flexShrink: 0 }}>
+                  {t.puntos.toLocaleString("es-CO")}
+                  <span style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 500, marginLeft: 4 }}>pts</span>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
-    </main>
+    </AppShell>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: {
-    minHeight: "100vh",
-    fontFamily: "sans-serif",
-    background: "#f5f5f5",
-    padding: 16,
-    display: "flex",
-    justifyContent: "center",
-  },
-  columna: { width: "100%", maxWidth: 600, display: "flex", flexDirection: "column", gap: 8 },
-  titulo: { margin: "8px 0 0", fontSize: 22, textAlign: "center" },
-  nota: { fontSize: 13, color: "#777", margin: "0 0 12px", textAlign: "center" },
-  link: { fontSize: 13, color: "#2563eb", textDecoration: "none" },
-  podio: { display: "flex", flexDirection: "column", gap: 14 },
-  tarjeta: {
-    borderRadius: 14,
-    padding: "20px 16px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 6,
-    boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-  },
-  medalla: { fontSize: 34 },
-  nombre: { fontSize: 17, textAlign: "center" },
-  puntos: { fontSize: 26, fontWeight: 700 },
-  visitas: { fontSize: 13, opacity: 0.85 },
-};

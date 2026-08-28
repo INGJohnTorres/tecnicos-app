@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Field } from "@/app/_componentes/ui/Field";
+import Button from "@/app/_componentes/ui/Button";
+import { IconZap, IconUser, IconLock, IconAlertTriangle } from "@/app/_componentes/ui/Icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,79 +52,63 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={styles.main}>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <h1 style={styles.titulo}>Ingresar</h1>
+    <main className="page-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div className="card card-glow enter" style={{ width: "100%", maxWidth: 400, padding: "40px 36px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--grad)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IconZap size={20} style={{ color: "white" }} />
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15.5 }}>FTTH VISITAS</div>
+        </div>
 
-        <label style={styles.label}>
-          Nombre
-          <input
-            style={styles.input}
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            autoFocus
-            required
-          />
-        </label>
+        <h1 style={{ fontFamily: "var(--font-display)", margin: "0 0 6px", fontSize: 23, fontWeight: 700, letterSpacing: "-.01em" }}>
+          Acceso al sistema
+        </h1>
+        <p style={{ margin: "0 0 28px", fontSize: 13.5, color: "var(--text-muted)" }}>
+          Ingresá tus credenciales para ver tu ciclo.
+        </p>
 
-        <label style={styles.label}>
-          Clave
-          <input
-            style={styles.input}
-            type="password"
-            value={clave}
-            onChange={(e) => setClave(e.target.value)}
-            required
-          />
-        </label>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ position: "relative" }}>
+            <Field
+              label="Usuario"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              autoFocus
+              required
+              style={{ paddingLeft: 40 }}
+            />
+            <IconUser size={16} style={{ position: "absolute", left: 14, top: 38, color: "var(--text-faint)" }} />
+          </div>
 
-        {error && <p style={styles.error}>{error}</p>}
+          <div style={{ position: "relative" }}>
+            <Field
+              label="Clave"
+              type="password"
+              value={clave}
+              onChange={(e) => setClave(e.target.value)}
+              required
+              style={{ paddingLeft: 40 }}
+            />
+            <IconLock size={16} style={{ position: "absolute", left: 14, top: 38, color: "var(--text-faint)" }} />
+          </div>
 
-        <button style={styles.boton} disabled={cargando}>
-          {cargando ? "Ingresando..." : "Ingresar"}
-        </button>
-      </form>
+          {error && (
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: "var(--danger)" }}>
+              <IconAlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+              {error}
+            </div>
+          )}
+
+          <Button type="submit" loading={cargando} style={{ marginTop: 6, width: "100%" }}>
+            Ingresar
+          </Button>
+        </form>
+
+        <p style={{ margin: "24px 0 0", textAlign: "center", fontSize: 12, color: "var(--text-faint)" }}>
+          ¿Olvidaste tu clave? Contactá al administrador.
+        </p>
+      </div>
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: "sans-serif",
-    background: "#f5f5f5",
-    padding: 16,
-  },
-  form: {
-    background: "#fff",
-    padding: 32,
-    borderRadius: 12,
-    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-    width: "100%",
-    maxWidth: 360,
-  },
-  titulo: { margin: 0, fontSize: 22 },
-  label: { display: "flex", flexDirection: "column", gap: 6, fontSize: 14 },
-  input: {
-    padding: "10px 12px",
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    fontSize: 16,
-  },
-  boton: {
-    padding: "12px",
-    borderRadius: 8,
-    border: "none",
-    background: "#111",
-    color: "#fff",
-    fontSize: 16,
-    cursor: "pointer",
-  },
-  error: { color: "#c0392b", fontSize: 14, margin: 0 },
-};

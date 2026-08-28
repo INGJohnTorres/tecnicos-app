@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Field } from "@/app/_componentes/ui/Field";
+import Button from "@/app/_componentes/ui/Button";
+import { IconZap, IconAlertTriangle } from "@/app/_componentes/ui/Icons";
 
 export default function CambiarClavePage() {
   const router = useRouter();
@@ -37,17 +40,25 @@ export default function CambiarClavePage() {
   }
 
   return (
-    <main style={styles.main}>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <h1 style={styles.titulo}>Cambiá tu clave</h1>
-        <p style={styles.texto}>
+    <main className="page-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div className="card card-glow enter" style={{ width: "100%", maxWidth: 400, padding: "40px 36px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--grad)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IconZap size={20} style={{ color: "white" }} />
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15.5 }}>FTTH VISITAS</div>
+        </div>
+
+        <h1 style={{ fontFamily: "var(--font-display)", margin: "0 0 6px", fontSize: 22, fontWeight: 700 }}>
+          Cambiá tu clave
+        </h1>
+        <p style={{ margin: "0 0 26px", fontSize: 13.5, color: "var(--text-muted)" }}>
           Es tu primer ingreso — elegí una clave nueva antes de continuar.
         </p>
 
-        <label style={styles.label}>
-          Clave nueva
-          <input
-            style={styles.input}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Field
+            label="Clave nueva"
             type="password"
             value={claveNueva}
             onChange={(e) => setClaveNueva(e.target.value)}
@@ -55,68 +66,27 @@ export default function CambiarClavePage() {
             required
             autoFocus
           />
-        </label>
-
-        <label style={styles.label}>
-          Confirmar clave
-          <input
-            style={styles.input}
+          <Field
+            label="Confirmar clave"
             type="password"
             value={confirmar}
             onChange={(e) => setConfirmar(e.target.value)}
             minLength={6}
             required
           />
-        </label>
 
-        {error && <p style={styles.error}>{error}</p>}
+          {error && (
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: "var(--danger)" }}>
+              <IconAlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+              {error}
+            </div>
+          )}
 
-        <button style={styles.boton} disabled={cargando}>
-          {cargando ? "Guardando..." : "Guardar y continuar"}
-        </button>
-      </form>
+          <Button type="submit" loading={cargando} style={{ width: "100%" }}>
+            Guardar y continuar
+          </Button>
+        </form>
+      </div>
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: "sans-serif",
-    background: "#f5f5f5",
-    padding: 16,
-  },
-  form: {
-    background: "#fff",
-    padding: 32,
-    borderRadius: 12,
-    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-    width: "100%",
-    maxWidth: 360,
-  },
-  titulo: { margin: 0, fontSize: 22 },
-  texto: { margin: 0, fontSize: 14, color: "#555" },
-  label: { display: "flex", flexDirection: "column", gap: 6, fontSize: 14 },
-  input: {
-    padding: "10px 12px",
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    fontSize: 16,
-  },
-  boton: {
-    padding: "12px",
-    borderRadius: 8,
-    border: "none",
-    background: "#111",
-    color: "#fff",
-    fontSize: 16,
-    cursor: "pointer",
-  },
-  error: { color: "#c0392b", fontSize: 14, margin: 0 },
-};
