@@ -6,13 +6,11 @@ export const runtime = "nodejs";
 
 // PATCH /api/usuarios/[id]  { activo: boolean }
 //
-// Para un técnico que YA tiene historial no hay un DELETE real a
-// propósito: los registros de visitas quedan atados al usuario (para
-// conservar el historial de puntos/comisión), así que borrar la fila
-// de verdad arrastraría ese historial con ella. "Desactivar" logra el
-// mismo resultado práctico (deja de poder entrar, desaparece de las
-// listas activas) sin perder nada. El DELETE de más abajo solo cubre
-// el caso de un técnico recién creado por error, sin visitas todavía.
+// "Desactivar" es la opción normal para un técnico que se va o que ya
+// no debería poder entrar: deja de poder entrar y desaparece de las
+// listas activas, pero conserva su historial de puntos/comisión. El
+// DELETE de más abajo es la otra opción, deliberadamente destructiva:
+// borra a la persona Y todo lo que cargó, sin vuelta atrás.
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const usuario = await usuarioActual();
   if (!usuario) {
@@ -50,11 +48,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 // DELETE /api/usuarios/[id]
 //
-// Complementa el "no hay eliminar de verdad" de arriba: sirve puntualmente
-// para el caso de "creé un técnico por error" — solo se permite borrar de
-// verdad cuando esa persona todavía no tiene NINGUNA visita cargada (ni a
-// su nombre ni cargada por ella). Si ya tiene historial, se rechaza y se
-// indica usar "Desactivar" para no perder puntos/comisión.
+// Elimina al técnico Y todo su historial (todos sus registros de
+// visitas, sin importar el ciclo, más cualquier registro que haya
+// cargado él mismo). Es intencionalmente destructivo y no se puede
+// deshacer — para conservar el historial de alguien que se va, la
+// opción correcta es "Desactivar" (PATCH de arriba), no esto.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const usuario = await usuarioActual();
   if (!usuario) {
@@ -75,29 +73,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: "No se puede eliminar una cuenta de administrador" }, { status: 400 });
   }
 
-  const tieneHistorial = await prisma.registro.findFirst({
-    where: { OR: [{ usuarioId: params.id }, { cargadoPorId: params.id }] },
-    select: { id: true },
-  });
-  if (tieneHistorial) {
-    return NextResponse.json(
-      {
-        error: `"${objetivo.nombre}" ya tiene visitas cargadas — eliminarlo borraría ese historial de puntos. Usá "Desactivar" en su lugar.`,
-        codigo: "TIENE_HISTORIAL",
-      },
-      { status: 409 }
-    );
-  }
-
-  try {
-    await prisma.pushSubscription.deleteMany({ where: { usuarioId: params.id } });
-    await prisma.usuario.delete({ where: { id: params.id } });
-  } catch {
-    return NextResponse.json(
-      { error: "No se pudo eliminar (puede que se haya cargado una visita justo ahora). Probá de nuevo o usá 'Desactivar'." },
-      { status: 409 }
-    );
-  }
+  await prisma.$transaction([
+    prisma.registro.deleteMany({ where: { OR: [{ usuarioId: params.id }, { cargadoPorId: params.id }] } }),
+    prisma.pushSubscription.deleteMany({ where: { usuarioId: params.id } }),
+    prisma.usuario.delete({ where: { id: params.id } }),
+  ]);
 
   return NextResponse.json({ ok: true });
 }

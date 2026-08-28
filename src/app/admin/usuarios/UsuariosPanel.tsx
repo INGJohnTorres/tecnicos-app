@@ -86,7 +86,7 @@ export default function UsuariosPanel() {
 
   async function eliminarTecnico(u: Usuario) {
     const confirmado = window.confirm(
-      `¿Eliminar a "${u.nombre}" para siempre? Esto solo funciona si todavía no tiene ninguna visita cargada — si ya cargó algo, usá "Desactivar" en su lugar. Esta acción no se puede deshacer.`
+      `¿Eliminar a "${u.nombre}" para siempre?\n\nEsto borra también TODO su historial de visitas y puntos, de todos los ciclos. No se puede deshacer.\n\nSi solo querés que deje de poder entrar pero conservar su historial, cancelá esto y usá "Desactivar" en su lugar.`
     );
     if (!confirmado) return;
 
@@ -108,8 +108,9 @@ export default function UsuariosPanel() {
     <div style={{ maxWidth: 520, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
         Un técnico desactivado no puede entrar a la app y desaparece de las listas activas, pero su historial de
-        visitas y comisión queda guardado. "Eliminar" solo funciona si todavía no cargó ninguna visita (por ejemplo,
-        si lo creaste por error) — si ya tiene historial, usá "Desactivar" para no perder sus puntos.
+        visitas y comisión queda guardado — usá esta opción para alguien que se va de la empresa. "Eliminar" en
+        cambio borra a la persona y todo su historial para siempre, sin vuelta atrás — usala solo para corregir un
+        técnico creado por error.
       </p>
 
       {mensaje && (
@@ -138,7 +139,7 @@ export default function UsuariosPanel() {
                   <button
                     onClick={() => eliminarTecnico(u)}
                     disabled={eliminandoId === u.id}
-                    title="Eliminar para siempre (solo si no tiene visitas cargadas)"
+                    title="Eliminar para siempre (borra también todo su historial)"
                     className="btn btn-secondary btn-sm"
                     style={{ padding: "6px 10px", color: "var(--danger)" }}
                   >
