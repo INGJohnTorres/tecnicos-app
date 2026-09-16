@@ -295,12 +295,14 @@ textarea {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: var(--grad);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   flex-shrink: 0;
-  color: white;
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.shell-logo-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .shell-logo-text {
   font-family: var(--font-display);

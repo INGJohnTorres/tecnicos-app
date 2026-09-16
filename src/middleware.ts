@@ -39,6 +39,9 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Protege todo excepto archivos estáticos.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js).*)"],
+  // Protege todo excepto archivos estáticos — antes solo excluía un puñado
+  // de nombres puntuales (manifest.json, sw.js), así que cualquier otra
+  // imagen de /public (íconos, el logo) quedaba bloqueada para quien no
+  // tuviera sesión, rompiendo el logo en la propia pantalla de login.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|.*\\.(?:png|jpg|jpeg|svg|webp|gif|ico)$).*)"],
 };
