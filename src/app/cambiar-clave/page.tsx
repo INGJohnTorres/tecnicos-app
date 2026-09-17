@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Field } from "@/app/_componentes/ui/Field";
 import Button from "@/app/_componentes/ui/Button";
-import { IconAlertTriangle } from "@/app/_componentes/ui/Icons";
+import { IconZap, IconAlertTriangle } from "@/app/_componentes/ui/Icons";
 
 export default function CambiarClavePage() {
   const router = useRouter();
@@ -43,8 +43,8 @@ export default function CambiarClavePage() {
     <main className="page-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div className="card card-glow enter" style={{ width: "100%", maxWidth: 400, padding: "40px 36px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, overflow: "hidden", boxShadow: "0 0 0 1px var(--border-strong)", flexShrink: 0 }}>
-            <img src="/logo-mark.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--grad)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IconZap size={20} style={{ color: "white" }} />
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15.5 }}>FTTH VISITAS</div>
         </div>

@@ -1,5 +1,13 @@
 import CerrarSesionBoton from "./CerrarSesionBoton";
-import { IconHome, IconPlusCircle, IconUsers, IconTrendingUp, IconTrophy } from "./ui/Icons";
+import {
+  IconHome,
+  IconPlusCircle,
+  IconUsers,
+  IconTrendingUp,
+  IconTrophy,
+  IconLogOut,
+  IconZap,
+} from "./ui/Icons";
 
 export type SeccionActiva = "panel" | "cargar" | "usuarios" | "tendencias" | "ranking" | "registrar";
 
@@ -43,7 +51,7 @@ export default function AppShell({ usuario, activo, titulo, subtitulo, ciclo, ch
       <aside className="shell-sidebar">
         <div className="shell-logo">
           <div className="shell-logo-mark">
-            <img src="/logo-mark.png" alt="" />
+            <IconZap size={18} />
           </div>
           <div>
             <div className="shell-logo-text">FTTH VISITAS</div>
