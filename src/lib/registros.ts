@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { PUNTOS_SIN_CAMBIO, PUNTOS_CON_CAMBIO } from "./config";
+import { PUNTOS_SIN_CAMBIO, PUNTOS_CON_CAMBIO, PUNTOS_PYMES } from "./config";
 import { inicioDeCiclo, hoyBogota } from "./ciclo";
 
 export type ErrorNegocio = { codigo: string; mensaje: string };
@@ -22,13 +22,14 @@ export async function guardarRegistroDelDia(params: {
   fechaVisita: Date; // solo la parte de fecha importa
   cantidadSinCambio: number;
   cantidadConCambio: number;
+  cantidadPymes: number;
 }): Promise<{ ok: true; registro: any } | { ok: false; error: ErrorNegocio }> {
-  const { usuarioId, cargadoPorId, esAdmin, cantidadSinCambio, cantidadConCambio } = params;
+  const { usuarioId, cargadoPorId, esAdmin, cantidadSinCambio, cantidadConCambio, cantidadPymes } = params;
 
-  if (cantidadSinCambio < 0 || cantidadConCambio < 0) {
+  if (cantidadSinCambio < 0 || cantidadConCambio < 0 || cantidadPymes < 0) {
     return { ok: false, error: { codigo: "NEGATIVO", mensaje: "Las cantidades no pueden ser negativas" } };
   }
-  if (!Number.isInteger(cantidadSinCambio) || !Number.isInteger(cantidadConCambio)) {
+  if (!Number.isInteger(cantidadSinCambio) || !Number.isInteger(cantidadConCambio) || !Number.isInteger(cantidadPymes)) {
     return { ok: false, error: { codigo: "NO_ENTERO", mensaje: "Las cantidades tienen que ser números enteros" } };
   }
 
@@ -49,7 +50,8 @@ export async function guardarRegistroDelDia(params: {
 
   const puntosSinCambio = cantidadSinCambio * PUNTOS_SIN_CAMBIO;
   const puntosConCambio = cantidadConCambio * PUNTOS_CON_CAMBIO;
-  const puntosTotal = puntosSinCambio + puntosConCambio;
+  const puntosPymes = cantidadPymes * PUNTOS_PYMES;
+  const puntosTotal = puntosSinCambio + puntosConCambio + puntosPymes;
   const cicloInicio = inicioDeCiclo(fechaVisita);
 
   const registro = await prisma.registro.upsert({
@@ -59,8 +61,10 @@ export async function guardarRegistroDelDia(params: {
     update: {
       cantidadSinCambio,
       cantidadConCambio,
+      cantidadPymes,
       puntosSinCambio,
       puntosConCambio,
+      puntosPymes,
       puntosTotal,
       cargadoPorId,
       cicloInicio,
@@ -71,8 +75,10 @@ export async function guardarRegistroDelDia(params: {
       fechaVisita,
       cantidadSinCambio,
       cantidadConCambio,
+      cantidadPymes,
       puntosSinCambio,
       puntosConCambio,
+      puntosPymes,
       puntosTotal,
       cicloInicio,
     },
@@ -138,6 +144,7 @@ type RegistroParcial = {
   fechaVisita: Date;
   cantidadSinCambio: number;
   cantidadConCambio: number;
+  cantidadPymes: number;
   puntosTotal: number;
 };
 
@@ -153,7 +160,7 @@ function construirSerieDiaria(registros: RegistroParcial[], inicio: Date, fin: D
     const key = r.fechaVisita.toISOString().slice(0, 10);
     const previo = porFecha.get(key) ?? { visitas: 0, puntos: 0 };
     porFecha.set(key, {
-      visitas: previo.visitas + r.cantidadSinCambio + r.cantidadConCambio,
+      visitas: previo.visitas + r.cantidadSinCambio + r.cantidadConCambio + r.cantidadPymes,
       puntos: previo.puntos + r.puntosTotal,
     });
   }
@@ -188,7 +195,7 @@ function construirSerieDiaria(registros: RegistroParcial[], inicio: Date, fin: D
 export async function serieDiariaCiclo(usuarioId: string, inicio: Date, fin: Date): Promise<PuntoSerieDia[]> {
   const registros = await prisma.registro.findMany({
     where: { usuarioId, cicloInicio: inicio },
-    select: { fechaVisita: true, cantidadSinCambio: true, cantidadConCambio: true, puntosTotal: true },
+    select: { fechaVisita: true, cantidadSinCambio: true, cantidadConCambio: true, cantidadPymes: true, puntosTotal: true },
   });
   return construirSerieDiaria(registros, inicio, fin);
 }
@@ -197,7 +204,7 @@ export async function serieDiariaCiclo(usuarioId: string, inicio: Date, fin: Dat
 export async function serieDiariaCicloEquipo(inicio: Date, fin: Date): Promise<PuntoSerieDia[]> {
   const registros = await prisma.registro.findMany({
     where: { cicloInicio: inicio },
-    select: { fechaVisita: true, cantidadSinCambio: true, cantidadConCambio: true, puntosTotal: true },
+    select: { fechaVisita: true, cantidadSinCambio: true, cantidadConCambio: true, cantidadPymes: true, puntosTotal: true },
   });
   return construirSerieDiaria(registros, inicio, fin);
 }

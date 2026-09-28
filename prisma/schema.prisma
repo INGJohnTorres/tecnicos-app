@@ -69,10 +69,12 @@ model Registro {
 
   cantidadSinCambio Int @default(0) // 76 puntos c/u
   cantidadConCambio Int @default(0) // 66 puntos c/u
+  cantidadPymes     Int @default(0) // 50 puntos c/u, haya o no cambio de equipo
 
   // Calculados al guardar, para no tener que recalcular en cada lectura.
   puntosSinCambio Int
   puntosConCambio Int
+  puntosPymes     Int @default(0)
   puntosTotal     Int
 
   // A qué ciclo de facturación (19 → 18) pertenece esta fecha.

@@ -13,6 +13,7 @@ type Registro = {
   fechaVisita: string;
   cantidadSinCambio: number;
   cantidadConCambio: number;
+  cantidadPymes: number;
   puntosTotal: number;
   cargadoPorId: string;
 };
@@ -22,6 +23,7 @@ export default function CargarVisitaForm({ tecnicos }: { tecnicos: Tecnico[] }) 
   const [fechaVisita, setFechaVisita] = useState(hoyBogotaISO());
   const [cantidadSinCambio, setCantidadSinCambio] = useState(0);
   const [cantidadConCambio, setCantidadConCambio] = useState(0);
+  const [cantidadPymes, setCantidadPymes] = useState(0);
   const [mensaje, setMensaje] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
   const [guardando, setGuardando] = useState(false);
 
@@ -49,7 +51,7 @@ export default function CargarVisitaForm({ tecnicos }: { tecnicos: Tecnico[] }) 
     const res = await fetch("/api/registros", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ usuarioId, fechaVisita, cantidadSinCambio, cantidadConCambio }),
+      body: JSON.stringify({ usuarioId, fechaVisita, cantidadSinCambio, cantidadConCambio, cantidadPymes }),
     });
 
     const data = await res.json();
@@ -68,6 +70,7 @@ export default function CargarVisitaForm({ tecnicos }: { tecnicos: Tecnico[] }) 
     setFechaVisita(r.fechaVisita.slice(0, 10));
     setCantidadSinCambio(r.cantidadSinCambio);
     setCantidadConCambio(r.cantidadConCambio);
+    setCantidadPymes(r.cantidadPymes);
     setMensaje(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -128,6 +131,14 @@ export default function CargarVisitaForm({ tecnicos }: { tecnicos: Tecnico[] }) 
             onChange={(e) => setCantidadConCambio(Math.max(0, Number(e.target.value)))}
           />
 
+          <Field
+            label="Visitas Pymes (50 pts c/u, haya o no cambio)"
+            type="number"
+            min={0}
+            value={cantidadPymes}
+            onChange={(e) => setCantidadPymes(Math.max(0, Number(e.target.value)))}
+          />
+
           {mensaje && (
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: mensaje.tipo === "ok" ? "var(--success)" : "var(--danger)" }}>
               {mensaje.tipo === "ok" ? <IconCheckCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} /> : <IconAlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />}
@@ -152,12 +163,13 @@ export default function CargarVisitaForm({ tecnicos }: { tecnicos: Tecnico[] }) 
           )}
           {!cargandoLista && registros.length > 0 && (
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 460 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 540 }}>
                 <thead>
                   <tr>
                     <th style={thStyle}>Fecha</th>
                     <th style={{ ...thStyle, textAlign: "right" }}>Sin cambio</th>
                     <th style={{ ...thStyle, textAlign: "right" }}>Con cambio</th>
+                    <th style={{ ...thStyle, textAlign: "right" }}>Pymes</th>
                     <th style={{ ...thStyle, textAlign: "right" }}>Puntos</th>
                     <th style={thStyle}></th>
                   </tr>
@@ -168,6 +180,7 @@ export default function CargarVisitaForm({ tecnicos }: { tecnicos: Tecnico[] }) 
                       <td style={tdStyle}>{r.fechaVisita.slice(0, 10)}</td>
                       <td className="num" style={{ ...tdStyle, textAlign: "right" }}>{r.cantidadSinCambio}</td>
                       <td className="num" style={{ ...tdStyle, textAlign: "right" }}>{r.cantidadConCambio}</td>
+                      <td className="num" style={{ ...tdStyle, textAlign: "right" }}>{r.cantidadPymes}</td>
                       <td className="num" style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{r.puntosTotal}</td>
                       <td style={{ ...tdStyle, display: "flex", gap: 6, justifyContent: "flex-end" }}>
                         <button onClick={() => editar(r)} className="btn btn-secondary btn-sm" style={{ padding: "6px 10px" }}>

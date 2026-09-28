@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
     fechaVisita,
     cantidadSinCambio,
     cantidadConCambio,
+    cantidadPymes,
   } = body;
 
   const esAdmin = usuario.rol === "ADMIN";
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
     fechaVisita: new Date(fechaVisita),
     cantidadSinCambio: Number(cantidadSinCambio ?? 0),
     cantidadConCambio: Number(cantidadConCambio ?? 0),
+    cantidadPymes: Number(cantidadPymes ?? 0),
   });
 
   if (!resultado.ok) {

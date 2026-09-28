@@ -99,6 +99,7 @@ export default async function MiCicloPage() {
                   <div style={{ fontSize: 13.5, fontWeight: 600 }}>{formatoFecha(r.fechaVisita)}</div>
                   <div style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 2 }}>
                     {r.cantidadSinCambio} sin cambio + {r.cantidadConCambio} con cambio
+                    {r.cantidadPymes > 0 && ` + ${r.cantidadPymes} pymes`}
                   </div>
                 </div>
                 <div className="num" style={{ fontSize: 14, fontWeight: 700, color: "var(--cyan)" }}>{r.puntosTotal} pts</div>

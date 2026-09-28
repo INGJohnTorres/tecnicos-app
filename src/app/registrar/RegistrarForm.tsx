@@ -10,13 +10,14 @@ import { IconAlertTriangle, IconCheckCircle } from "@/app/_componentes/ui/Icons"
 export default function RegistrarForm() {
   const [cantidadSinCambio, setCantidadSinCambio] = useState(0);
   const [cantidadConCambio, setCantidadConCambio] = useState(0);
+  const [cantidadPymes, setCantidadPymes] = useState(0);
   const [mensaje, setMensaje] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [yaHabiaCargado, setYaHabiaCargado] = useState(false);
   const [cargandoInicial, setCargandoInicial] = useState(true);
 
   const hoyISO = hoyBogotaISO();
-  const puntosPreview = cantidadSinCambio * 76 + cantidadConCambio * 66;
+  const puntosPreview = cantidadSinCambio * 76 + cantidadConCambio * 66 + cantidadPymes * 50;
 
   useEffect(() => {
     fetch("/api/registros")
@@ -25,6 +26,7 @@ export default function RegistrarForm() {
         if (data.registro) {
           setCantidadSinCambio(data.registro.cantidadSinCambio);
           setCantidadConCambio(data.registro.cantidadConCambio);
+          setCantidadPymes(data.registro.cantidadPymes ?? 0);
           setYaHabiaCargado(true);
         }
       })
@@ -39,7 +41,7 @@ export default function RegistrarForm() {
     const res = await fetch("/api/registros", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fechaVisita: hoyISO, cantidadSinCambio, cantidadConCambio }),
+      body: JSON.stringify({ fechaVisita: hoyISO, cantidadSinCambio, cantidadConCambio, cantidadPymes }),
     });
 
     const data = await res.json();
@@ -82,6 +84,13 @@ export default function RegistrarForm() {
             min={0}
             value={cantidadConCambio}
             onChange={(e) => setCantidadConCambio(Math.max(0, Number(e.target.value)))}
+          />
+          <Field
+            label="Visitas Pymes (50 pts c/u, haya o no cambio)"
+            type="number"
+            min={0}
+            value={cantidadPymes}
+            onChange={(e) => setCantidadPymes(Math.max(0, Number(e.target.value)))}
           />
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: "var(--glass)", border: "1px solid var(--border)", borderRadius: 10 }}>

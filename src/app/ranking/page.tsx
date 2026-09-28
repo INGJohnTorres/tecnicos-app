@@ -30,7 +30,7 @@ export default async function RankingPage() {
         where: { usuarioId: t.id, cicloInicio: inicio },
       });
       const puntos = registros.reduce((acc, r) => acc + r.puntosTotal, 0);
-      const visitas = registros.reduce((acc, r) => acc + r.cantidadSinCambio + r.cantidadConCambio, 0);
+      const visitas = registros.reduce((acc, r) => acc + r.cantidadSinCambio + r.cantidadConCambio + r.cantidadPymes, 0);
       return { id: t.id, nombre: t.nombre, puntos, visitas };
     })
   );

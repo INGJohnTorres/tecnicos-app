@@ -3,6 +3,8 @@
 
 export const PUNTOS_SIN_CAMBIO = 76;
 export const PUNTOS_CON_CAMBIO = 66;
+// Visita a Pyme: mismo puntaje haya o no cambio de equipo.
+export const PUNTOS_PYMES = 50;
 
 // El ciclo de facturación va del día 19 de un mes al 18 del siguiente
 // (confirmado con el usuario — NO es mes calendario).
