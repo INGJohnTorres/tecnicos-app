@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { usuarioActual } from "@/lib/auth";
-import { cicloActual, formatoFecha } from "@/lib/ciclo";
+import { cicloActual, cicloAnterior, formatoFecha } from "@/lib/ciclo";
 import { totalPuntosCiclo, registrosDelCiclo } from "@/lib/registros";
 import { calcularProductividadEstimada, puntosParaSiguienteTramo } from "@/lib/comision";
 import AppShell from "@/app/_componentes/AppShell";
@@ -20,6 +20,10 @@ export default async function MiCicloPage() {
   const resultado = await calcularProductividadEstimada(puntos);
   const siguienteTramo = await puntosParaSiguienteTramo(puntos);
   const registros = await registrosDelCiclo(usuario.id, inicio);
+
+  const anterior = cicloAnterior(inicio);
+  const puntosAnterior = await totalPuntosCiclo(usuario.id, anterior.inicio);
+  const resultadoAnterior = await calcularProductividadEstimada(puntosAnterior);
 
   const formatoPlata = (n: number) =>
     n.toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
@@ -74,6 +78,47 @@ export default async function MiCicloPage() {
           <p style={{ fontSize: 11, color: "var(--text-faint)", margin: "16px 0 0" }}>
             * Estimado según puntos facturados. El valor final de nómina puede variar por ajustes de calidad, ausentismo o bonos.
           </p>
+        </Card>
+
+        <Card>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 12.5, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em" }}>
+                Ciclo anterior
+              </div>
+              <div style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 2 }}>
+                {formatoFecha(anterior.inicio)} – {formatoFecha(anterior.fin)}
+              </div>
+            </div>
+            {resultadoAnterior.estado !== "bajo_minimo" && (
+              <div className="badge badge-info">{(resultadoAnterior.comision * 100).toFixed(0)}% comisión</div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: 28, marginTop: 14, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Puntos facturados</div>
+              <div className="num" style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginTop: 3 }}>
+                {puntosAnterior.toLocaleString("es-CO")}
+              </div>
+            </div>
+            {resultadoAnterior.estado !== "bajo_minimo" && (
+              <div>
+                <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Comisionaste (estimado)</div>
+                <div className="num" style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginTop: 3, color: "var(--success)" }}>
+                  {formatoPlata(resultadoAnterior.produccionEstimada)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {resultadoAnterior.estado === "bajo_minimo" && (
+            <div style={{ marginTop: 14, fontSize: 12.5, color: "var(--text-muted)" }}>
+              {puntosAnterior === 0
+                ? "No cargaste visitas en ese ciclo."
+                : `No llegaste al mínimo para comisionar (${resultadoAnterior.minimoRequerido.toLocaleString("es-CO")} puntos).`}
+            </div>
+          )}
         </Card>
 
         <a href="/registrar" style={{ textDecoration: "none" }}>
